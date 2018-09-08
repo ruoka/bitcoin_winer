@@ -1,0 +1,3 @@
+[submodule "cryptic"]
+	path = cryptic
+	url = https://github.com/ruoka/cryptic.git

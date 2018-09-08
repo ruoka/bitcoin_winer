@@ -42,7 +42,7 @@ namespace bitcoin::p2p
     {
         unsigned_integer version = {protocol_version};
         variable_length_integer hash_count = {0x0u};
-        vector<hash> block_locator_hashes = {}; // FIXME
+        vector<hash> block_locator_hashes = {};
         hash hash_stop = {};
     };
 

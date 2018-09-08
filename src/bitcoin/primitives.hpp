@@ -35,7 +35,11 @@ namespace bitcoin
 
     struct variable_length_integer
     {
-        std::uint8_t uint8;
+        union
+        {
+            std::uint8_t uint8;
+            std::byte byte;
+        };
         union
         {
             std::uint16_t uint16;
@@ -49,6 +53,7 @@ namespace bitcoin
             if(i < 0xFDu)
             {
                 uint8 = static_cast<std::uint8_t>(i);
+                uint64 = 0x0;
             }
             else if(i <= 0xFFFFu)
             {
@@ -67,7 +72,7 @@ namespace bitcoin
             }
         }
 
-        operator std::uint64_t ()
+        operator std::size_t () const
         {
             switch(uint8)
             {
@@ -75,6 +80,17 @@ namespace bitcoin
                 case 0xFEu: return uint32;
                 case 0xFFu: return uint64;
                 default: return uint8;
+            }
+        }
+
+        bool operator == (std::size_t size) const
+        {
+            switch(uint8)
+            {
+                case 0xFDu: return uint16 == size;
+                case 0xFEu: return uint32 == size;
+                case 0xFFu: return uint64 == size;
+                default: return uint8 == size;
             }
         }
     };

@@ -1,6 +1,10 @@
 CXX = /usr/local/bin/clang
 
-CXXFLAGS = -nostdinc++ -I/usr/local/include/c++/v1 -I$(SRCDIR) -std=c++1z -MMD # -D DEBUG=1
+CXXFLAGS = -nostdinc++ -I/usr/local/include/c++/v1 -I$(SRCDIR)
+
+CXXFLAGS += -Icryptic/src/
+
+CXXFLAGS += -std=c++1z -MMD
 
 LDFLAGS = -nostdlib -L/usr/lib -L/usr/local/lib -lc++ -lSystem
 
