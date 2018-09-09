@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <type_traits>
 #include <vector>
 
 // The hashes are in internal byte order; the other values are all in little-endian order.
@@ -7,31 +8,35 @@
 
 namespace bitcoin
 {
-    constexpr unsigned protocol_version = {70012u};
+    using byte = std::byte;
 
-    union signed_integer
+    template<typename Native>
+    union integer
     {
-        std::int32_t native;
-        std::byte bytes[4];
+        static_assert(std::is_integral_v<Native>);
+        Native native;
+        byte bytes[sizeof(Native)];
+        operator std::size_t () const
+        {
+            return std::size_t{native};
+        }
+        bool operator == (const integer& other) const
+        {
+            return native == other.native;
+        }
+        bool operator == (const Native& other) const
+        {
+            return native == other;
+        }
     };
 
-    union unsigned_short
-    {
-        std::int16_t native;
-        std::byte bytes[2];
-    };
+    using satoshis = integer<std::uint64_t>;
 
-    union unsigned_integer
-    {
-        std::uint32_t native;
-        std::byte bytes[4];
-    };
+    using signed_integer = integer<std::int32_t>;
 
-    union unsigned_long
-    {
-        std::uint64_t native;
-        std::byte bytes[8];
-    };
+    using unsigned_integer = integer<std::uint32_t>;
+
+    using unsigned_long = integer<std::uint64_t>;
 
     struct variable_length_integer
     {
@@ -95,22 +100,12 @@ namespace bitcoin
         }
     };
 
-    using satoshis = unsigned_long;
-
     template<typename T>
     using vector = std::vector<T>;
-
-    using byte = std::byte;
 
     using script = vector<byte>;
 
     using raw_transaction = vector<byte>;
-
-    struct variable_length_string
-    {
-        variable_length_integer length = {0x0u};
-        vector<byte> string = {};
-    };
 
     struct hash
     {
@@ -137,7 +132,7 @@ namespace bitcoin
             variable_length_integer script_length = {0x0u};
             script pubkey_script = {};
         };
-        signed_integer version = {1u};
+        signed_integer version = {0x1}; // NOTE this is signed
         variable_length_integer input_count = {0x0u};
         vector<input> inputs = {};
         variable_length_integer output_count = {0x0u};
@@ -149,7 +144,7 @@ namespace bitcoin
     {
         struct
         {
-            unsigned_integer version = {protocol_version};
+            signed_integer version = {0x1}; // NOTE this is signed
             hash previous_block = {};
             hash merkle_root = {};
             unsigned_integer timestamp = {0x0u};

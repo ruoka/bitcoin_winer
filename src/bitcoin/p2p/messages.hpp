@@ -3,6 +3,8 @@
 
 namespace bitcoin::p2p
 {
+    constexpr signed protocol_version = {70012u};
+
     constexpr unsigned main	    = {0xd9b4bef9u};
     constexpr unsigned testnet  = {0xdab5bffau};
     constexpr unsigned testnet3 = {0x0709110bu};
@@ -10,14 +12,6 @@ namespace bitcoin::p2p
 
     namespace message
     {
-
-    struct header
-    {
-        unsigned_integer magic = {testnet};
-        byte command[12] = {};
-        unsigned_integer payload_length = {0x0u};
-        unsigned_integer checksum = {0x5df6e0e2u};
-    };
 
     struct getheaders
     {
@@ -88,6 +82,14 @@ namespace bitcoin::p2p
 
 // control messages
 
+    using unsigned_short = integer<std::uint16_t>;
+
+    struct variable_length_string
+    {
+        variable_length_integer length = {0x0u};
+        vector<byte> string = {};
+    };
+
     struct network_address
     {
         unsigned_integer timestamp = {0x0u}; // network addresses are not prefixed with a timestamp in the version message.
@@ -100,7 +102,7 @@ namespace bitcoin::p2p
 
     struct version
     {
-        unsigned_integer version = {protocol_version};
+        signed_integer version = {protocol_version};
         unsigned_long services = {0x0ul};
         unsigned_integer timestamp = {0x0u};
         network_address recipient_address = {};
@@ -134,6 +136,8 @@ namespace bitcoin::p2p
 
     struct pong
     {
+        explicit pong(const ping& p) : nonce{p.nonce}
+        {}
         unsigned_long nonce = {0x0ul};
     };
 

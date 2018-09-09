@@ -1,3 +1,5 @@
+#include "bitcoin/primitives.hpp"
+
 namespace bitcoin::log
 {
 

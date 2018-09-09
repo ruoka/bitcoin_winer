@@ -1,5 +1,6 @@
 #pragma once
 #include "bitcoin/p2p/bytestream.hpp"
+#include "bitcoin/p2p/messages.hpp"
 #include "cryptic/sha2.hpp"
 
 namespace bitcoin::p2p::message
@@ -13,6 +14,26 @@ public:
 
     payload() : m_buffer{}, m_current{m_buffer.begin()}
     {}
+
+    explicit payload(std::size_t size) : m_buffer(size), m_current{m_buffer.begin()}
+    {}
+
+    template<typename Message,
+             typename = std::enable_if_t<!std::is_same_v<Message, unsigned_integer>>>
+    explicit payload(const Message& msg) : m_buffer{}, m_current{m_buffer.begin()}
+    {
+        *this << msg;
+    }
+
+    void resize(std::size_t sz)
+    {
+        m_buffer.resize(sz);
+    }
+
+    std::array<byte,12> command() const
+    {
+        return {byte{'t'},byte{'x'}};
+    }
 
     auto length() const
     {
@@ -66,6 +87,16 @@ public:
         read(msg.user_agent.string);
         read(msg.start_height.bytes);
         Ensures(msg.user_agent.length == msg.user_agent.string.size());
+        return *this;
+    }
+
+    auto& operator << (const message::verack& msg)
+    {
+        return *this;
+    }
+
+    auto& operator >> (message::verack& msg)
+    {
         return *this;
     }
 
@@ -182,13 +213,7 @@ public:
         return *this;
     }
 
-    void dump(std::ostream& os) const
-    {
-        for(const auto b : m_buffer)
-            os.put(static_cast<char>(b));
-    }
-
-private:
+// private:
 
     void write(const variable_length_integer& variable)
     {
@@ -226,18 +251,21 @@ private:
 
     void read(byte& b)
     {
-        b = *m_current++;
+        b = *m_current;
+        std::advance(m_current, 1);
     }
 
     template<std::size_t N>
     void read(byte (&bytes)[N], const std::size_t size = N)
     {
         std::copy_n(m_current, size, bytes);
+        std::advance(m_current, size);
     }
 
     void read(vector<byte>& bytes)
     {
         std::copy_n(m_current, bytes.size(), bytes.begin());
+        std::advance(m_current, bytes.size());
     }
 
     void write(byte b)
@@ -248,12 +276,12 @@ private:
     template<std::size_t N>
     void write(const byte (&bytes)[N], const std::size_t size = N)
     {
-        std::copy(bytes, bytes + size, std::back_inserter(m_buffer));
+        m_buffer.insert(m_buffer.end(), bytes, bytes + size);
     }
 
     void write(const vector<byte>& bytes)
     {
-        std::copy(bytes.begin(), bytes.end(), std::back_inserter(m_buffer));
+        m_buffer.insert(m_buffer.end(), bytes.begin(), bytes.end());
     }
 
     vector<byte> m_buffer;
@@ -265,10 +293,18 @@ private:
 
 namespace std {
 
-    inline auto& operator << (std::ostream& os, const bitcoin::p2p::message::payload pl)
+    inline auto& operator << (std::ostream& os, const bitcoin::p2p::message::payload& pl)
     {
-        pl.dump(os);
+        auto obs = bitcoin::p2p::message::obytestream{os};
+        obs.write(pl.m_buffer);
         return os;
+    }
+
+    inline auto& operator >> (std::istream& is, bitcoin::p2p::message::payload& pl)
+    {
+        auto ibs = bitcoin::p2p::message::ibytestream{is};
+        ibs.read(pl.m_buffer);
+        return is;
     }
 
 } // namespace std

@@ -1,3 +1,6 @@
 [submodule "cryptic"]
 	path = cryptic
 	url = https://github.com/ruoka/cryptic.git
+[submodule "net4cpp"]
+	path = net4cpp
+	url = https://github.com/ruoka/net4cpp.git

@@ -1,8 +1,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
-#include "bitcoin/primitives.hpp"
-#include "bitcoin/p2p/payload.hpp"
 #include "bitcoin/log/stream.hpp"
+#include "bitcoin/p2p/payload.hpp"
 
 using namespace bitcoin;
 
