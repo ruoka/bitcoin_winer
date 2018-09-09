@@ -2,11 +2,13 @@ CXX = /usr/local/bin/clang
 
 CXXFLAGS = -nostdinc++ -I/usr/local/include/c++/v1 -I$(SRCDIR)
 
-CXXFLAGS += -Icryptic/src/
+CXXFLAGS += -Icryptic/src/ -Inet4cpp/src/
 
 CXXFLAGS += -std=c++1z -MMD
 
 LDFLAGS = -nostdlib -L/usr/lib -L/usr/local/lib -lc++ -lSystem
+
+LDFLAGS += -Lnet4cpp/lib/ -lnet4cpp
 
 SRCDIR = src
 
@@ -22,7 +24,7 @@ INCDIR = include
 
 GTESTDIR = ../googletest/googletest
 
-#TARGETS = $(addprefix $(BINDIR)/, spike)
+TARGETS = $(addprefix $(BINDIR)/, bitcoin_test_client)
 
 MAINS	= $(TARGETS:$(BINDIR)/%=$(SRCDIR)/%.cpp)
 
