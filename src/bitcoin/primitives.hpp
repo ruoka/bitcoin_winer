@@ -14,20 +14,24 @@ namespace bitcoin
     union integer
     {
         static_assert(std::is_integral_v<Native>);
-        Native native;
-        byte bytes[sizeof(Native)];
+        using native_type = Native;
+        integer() = default;
+        integer(const native_type& i) : native(i)
+        {}
         operator std::size_t () const
         {
-            return std::size_t{native};
+            return native;
         }
         bool operator == (const integer& other) const
         {
             return native == other.native;
         }
-        bool operator == (const Native& other) const
+        bool operator == (const native_type& other) const
         {
             return native == other;
         }
+        native_type native = {0x0};
+        byte bytes[sizeof(native_type)];
     };
 
     using satoshis = integer<std::uint64_t>;

@@ -1,14 +1,10 @@
 #pragma once
+#include <random>
 #include "bitcoin/primitives.hpp"
 
 namespace bitcoin::p2p
 {
     constexpr signed protocol_version = {70012u};
-
-    constexpr unsigned main	    = {0xd9b4bef9u};
-    constexpr unsigned testnet  = {0xdab5bffau};
-    constexpr unsigned testnet3 = {0x0709110bu};
-    constexpr unsigned namecoin = {0xfeb4bef9u};
 
     namespace message
     {
@@ -80,7 +76,7 @@ namespace bitcoin::p2p
         vector<inventory> inventories = {};
     };
 
-// control messages
+// NOTE, control messages
 
     using unsigned_short = integer<std::uint16_t>;
 
@@ -92,7 +88,7 @@ namespace bitcoin::p2p
 
     struct network_address
     {
-        unsigned_integer timestamp = {0x0u}; // network addresses are not prefixed with a timestamp in the version message.
+        unsigned_integer timestamp = {0x0u}; // NOTE, network addresses are not prefixed with a timestamp in the version message.
         unsigned_long services = {0x0ul};
         byte address[16] = {};
         unsigned_short port = {0x0u};
@@ -131,11 +127,18 @@ namespace bitcoin::p2p
 
     struct ping
     {
+        ping()
+        {
+            auto engine = std::default_random_engine{};
+            auto distribution = std::uniform_int_distribution<unsigned_long::native_type>{};
+            nonce = distribution(engine);
+        }
         unsigned_long nonce = {0x0ul};
     };
 
     struct pong
     {
+        pong() = default;
         explicit pong(const ping& p) : nonce{p.nonce}
         {}
         unsigned_long nonce = {0x0ul};

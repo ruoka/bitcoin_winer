@@ -5,6 +5,11 @@
 namespace bitcoin::p2p::message
 {
 
+constexpr unsigned main	    = {0xd9b4bef9u};
+constexpr unsigned testnet  = {0xdab5bffau};
+constexpr unsigned testnet3 = {0x0709110bu};
+constexpr unsigned namecoin = {0xfeb4bef9u};
+
 struct header
 {
     header() = default;

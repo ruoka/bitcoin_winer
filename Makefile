@@ -24,7 +24,7 @@ INCDIR = include
 
 GTESTDIR = ../googletest/googletest
 
-TARGETS = $(addprefix $(BINDIR)/, bitcoin_test_client)
+TARGETS = $(addprefix $(BINDIR)/, bitcoin_test_client bitcoin_test_server)
 
 MAINS	= $(TARGETS:$(BINDIR)/%=$(SRCDIR)/%.cpp)
 

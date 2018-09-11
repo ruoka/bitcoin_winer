@@ -2,30 +2,41 @@
 #include <chrono>
 #include "bitcoin/p2p/header.hpp"
 #include "bitcoin/p2p/payload.hpp"
-#include "net/connector.hpp"
+#include "net/acceptor.hpp"
+#include "net/syslogstream.hpp"
 
 using namespace bitcoin::p2p;
-
 using namespace std::literals;
+using namespace net;
 
 int main()
 try {
 
-    auto connection = net::connect("localhost", "18333");
+    net::slog.tag("WinerServer");
+    slog.facility(syslog::facility::local0);
+    slog.level(syslog::severity::debug);
+    slog.redirect(std::clog);
 
+    slog << debug << "Creating acceptor" << flush;
+    auto acceptor = net::acceptor{"localhost", "18333"};
+    slog << debug << "Waiting for connections" << flush;
+    auto connection = acceptor.accept();
+    slog << debug << "Accepted connection" << flush;
     // Call a node connect
     {
+        slog << debug << "Sending version message" << flush;
         auto version = message::version{};
         auto payload = message::payload{version};
         auto header = message::header{payload};
-        connection << header << payload << net::flush;
+        connection << header << payload << flush;
     }
 
-    auto checks = 0;
+    auto handshake = 0;
 
     // Shake hands
-    while(connection && checks < 2)
+    while(connection && handshake < 2)
     {
+        slog << debug << "Waiting for messages" << flush;
         auto header = message::header{};
         connection >> header;
         auto payload = message::payload(header.payload_length);
@@ -33,19 +44,22 @@ try {
 
         if(header.command == header.command) // version
         {
+            slog << debug << "Received version message" << flush;
             auto version = message::version{};
             payload >> version;
+            slog << debug << "Sending varack message" << flush;
             auto verack = message::verack{};
             auto payload = message::payload{verack};
             auto header = message::header{payload};
-            connection << header << payload << net::flush;
-            ++checks;
+            connection << header << payload << flush;
+            ++handshake;
         }
         else if(header.command == header.command) // verack
         {
+            slog << debug << "Received verack message" << flush;
             auto verack = message::verack{};
             payload >> verack;
-            ++checks;
+            ++handshake;
         }
     }
 
@@ -56,6 +70,7 @@ try {
     {
         if(connection.wait_for(30s))
         {
+            slog << debug << "Waiting for messages" << flush;
             auto header = message::header{};
             connection >> header;
             auto payload = message::payload(header.payload_length);
@@ -63,15 +78,18 @@ try {
 
             if(header.command == header.command) // ping
             {
+                slog << debug << "Received ping message" << flush;
                 auto ping = message::ping{};
                 payload >> ping;
+                slog << debug << "Sending pong message" << flush;
                 auto pong = message::pong{ping};
                 auto payload = message::payload{pong};
                 auto header = message::header{payload};
-                connection << header << payload << net::flush;
+                connection << header << payload << flush;
             }
             else if(header.command == header.command) // pong
             {
+                slog << debug << "Received pong message" << flush;
                 auto pong = message::pong{};
                 payload >> pong;
                 --pings;
@@ -79,10 +97,11 @@ try {
         }
         else
         {
+            slog << debug << "Sending ping message" << flush;
             auto ping = message::ping{};
             auto payload = message::payload{ping};
             auto header = message::header{payload};
-            connection << header << payload << net::flush;
+            connection << header << payload << flush;
             ++pings;
         }
     }
