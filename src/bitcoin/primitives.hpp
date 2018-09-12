@@ -8,6 +8,12 @@
 
 namespace bitcoin
 {
+    namespace message
+    {
+        class header;
+        class payload;
+    }
+
     using byte = std::byte;
 
     template<typename Native>
@@ -16,7 +22,7 @@ namespace bitcoin
         static_assert(std::is_integral_v<Native>);
         using native_type = Native;
         integer() = default;
-        integer(const native_type& i) : native(i)
+        constexpr integer(const native_type& i) : native(i)
         {}
         operator std::size_t () const
         {
@@ -26,12 +32,8 @@ namespace bitcoin
         {
             return native == other.native;
         }
-        bool operator == (const native_type& other) const
-        {
-            return native == other;
-        }
         native_type native = {0x0};
-        byte bytes[sizeof(native_type)];
+        byte bytes[sizeof native];
     };
 
     using satoshis = integer<std::uint64_t>;
@@ -42,21 +44,9 @@ namespace bitcoin
 
     using unsigned_long = integer<std::uint64_t>;
 
-    struct variable_length_integer
+    class variable_length_integer
     {
-        union
-        {
-            std::uint8_t uint8;
-            std::byte byte;
-        };
-        union
-        {
-            std::uint16_t uint16;
-            std::uint32_t uint32;
-            std::uint64_t uint64;
-            std::byte bytes[8];
-        };
-
+    public:
         variable_length_integer(std::uint64_t i)
         {
             if(i < 0xFDu)
@@ -80,7 +70,6 @@ namespace bitcoin
                 uint64 = i;
             }
         }
-
         operator std::size_t () const
         {
             switch(uint8)
@@ -91,7 +80,6 @@ namespace bitcoin
                 default: return uint8;
             }
         }
-
         bool operator == (std::size_t size) const
         {
             switch(uint8)
@@ -102,6 +90,20 @@ namespace bitcoin
                 default: return uint8 == size;
             }
         }
+    private:
+        union
+        {
+            std::uint8_t uint8;
+            std::byte byte;
+        };
+        union
+        {
+            std::uint16_t uint16;
+            std::uint32_t uint32;
+            std::uint64_t uint64;
+            std::byte bytes[8];
+        };
+        friend class message::payload;
     };
 
     template<typename T>

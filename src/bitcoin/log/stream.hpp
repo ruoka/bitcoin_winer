@@ -12,7 +12,7 @@ struct stream : public std::ostream
 
     auto& operator << (const unsigned_integer& type)
     {
-        parent << std::hex << type.native;
+        parent << std::hex << type;
         return *this;
     }
 

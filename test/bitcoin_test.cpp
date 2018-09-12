@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include "bitcoin/log/stream.hpp"
-#include "bitcoin/p2p/payload.hpp"
+#include "bitcoin/message/payload.hpp"
 
 using namespace bitcoin;
 
@@ -9,18 +9,18 @@ using namespace bitcoin;
 // {
 //     auto stream = p2p::stream{std::clog};
 //
-//     auto header = p2p::message::header{};
+//     auto header = message::header{};
 //
 //     stream >> header;
 //
 //     if(header.command[0] == std::byte{'t'}) // tx
 //     {
-//         auto transaction = p2p::message::tx{};
+//         auto transaction = message::tx{};
 //         stream >> transaction;
 //     }
 //
 //     {
-//         auto transaction = p2p::message::tx{};
+//         auto transaction = message::tx{};
 //         stream << header;
 //         stream << transaction;
 //     }

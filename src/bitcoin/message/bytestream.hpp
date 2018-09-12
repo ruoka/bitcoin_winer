@@ -2,7 +2,7 @@
 #include <iostream>
 #include "gsl/span.hpp"
 
-namespace bitcoin::p2p::message
+namespace bitcoin::message
 {
 
 class obytestream
@@ -39,4 +39,4 @@ private:
     std::istream& m_is;
 };
 
-} // namespace bitcoin::p2p::message
+} // namespace bitcoin::message

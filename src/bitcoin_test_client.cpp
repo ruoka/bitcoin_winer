@@ -1,7 +1,7 @@
 #include <iostream>
 #include <chrono>
-#include "bitcoin/p2p/header.hpp"
-#include "bitcoin/p2p/payload.hpp"
+#include "bitcoin/message/header.hpp"
+#include "bitcoin/message/payload.hpp"
 #include "net/connector.hpp"
 
 using namespace bitcoin::p2p;

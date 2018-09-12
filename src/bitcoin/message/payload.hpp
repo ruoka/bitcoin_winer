@@ -1,9 +1,9 @@
 #pragma once
-#include "bitcoin/p2p/bytestream.hpp"
-#include "bitcoin/p2p/messages.hpp"
+#include "bitcoin/message/bytestream.hpp"
+#include "bitcoin/message/messages.hpp"
 #include "cryptic/sha2.hpp"
 
-namespace bitcoin::p2p::message
+namespace bitcoin::message
 {
 
 using sha032 = cryptic::sha2<0x6a09e667u,0xbb67ae85u,0x3c6ef372u,0xa54ff53au,0x510e527fu,0x9b05688cu,0x1f83d9abu,0x5be0cd19u,1>;
@@ -37,18 +37,15 @@ public:
 
     auto length() const
     {
-        return static_cast<std::uint32_t>(m_buffer.size());
+        return unsigned_integer{m_buffer.size()};
     }
 
     auto checksum() const
     {
-        if(length() == 0)
-            return 0x5df6e0e2u;
-
         const auto hash = sha032{m_buffer};
         auto sum = unsigned_integer{};
         hash.encode(sum.bytes);
-        return sum.native;
+        return sum;
     }
 
     auto& operator << (const message::version& msg)
@@ -289,20 +286,20 @@ public:
     vector<byte>::const_iterator m_current;
 };
 
-} // namespace bitcoin::p2p::message
+} // namespace bitcoin::message
 
 namespace std {
 
-    inline auto& operator << (std::ostream& os, const bitcoin::p2p::message::payload& pl)
+    inline auto& operator << (std::ostream& os, const bitcoin::message::payload& pl)
     {
-        auto obs = bitcoin::p2p::message::obytestream{os};
+        auto obs = bitcoin::message::obytestream{os};
         obs.write(pl.m_buffer);
         return os;
     }
 
-    inline auto& operator >> (std::istream& is, bitcoin::p2p::message::payload& pl)
+    inline auto& operator >> (std::istream& is, bitcoin::message::payload& pl)
     {
-        auto ibs = bitcoin::p2p::message::ibytestream{is};
+        auto ibs = bitcoin::message::ibytestream{is};
         ibs.read(pl.m_buffer);
         return is;
     }

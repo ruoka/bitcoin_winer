@@ -1,14 +1,14 @@
 #pragma once
 #include <iostream>
-#include "bitcoin/p2p/payload.hpp"
+#include "bitcoin/message/payload.hpp"
 
-namespace bitcoin::p2p::message
+namespace bitcoin::message
 {
 
-constexpr unsigned main	    = {0xd9b4bef9u};
-constexpr unsigned testnet  = {0xdab5bffau};
-constexpr unsigned testnet3 = {0x0709110bu};
-constexpr unsigned namecoin = {0xfeb4bef9u};
+constexpr auto main	    = unsigned_integer{0xd9b4bef9u};
+constexpr auto testnet  = unsigned_integer{0xdab5bffau};
+constexpr auto testnet3 = unsigned_integer{0x0709110bu};
+constexpr auto namecoin = unsigned_integer{0xfeb4bef9u};
 
 struct header
 {
@@ -26,14 +26,14 @@ struct header
     unsigned_integer checksum = {0x5df6e0e2u};
 };
 
-} // namespace bitcoin::p2p::message
+} // namespace bitcoin::message
 
 namespace std
 {
 
-inline auto& operator << (std::ostream& os, bitcoin::p2p::message::header& header)
+inline auto& operator << (std::ostream& os, bitcoin::message::header& header)
 {
-    auto bos = bitcoin::p2p::message::obytestream{os};
+    auto bos = bitcoin::message::obytestream{os};
     bos.write(header.magic.bytes);
     bos.write(header.command);
     bos.write(header.payload_length.bytes);
@@ -41,9 +41,9 @@ inline auto& operator << (std::ostream& os, bitcoin::p2p::message::header& heade
     return os;
 }
 
-inline auto& operator >> (std::istream& is, bitcoin::p2p::message::header& header)
+inline auto& operator >> (std::istream& is, bitcoin::message::header& header)
 {
-    auto bis = bitcoin::p2p::message::ibytestream{is};
+    auto bis = bitcoin::message::ibytestream{is};
     bis.read(header.magic.bytes);
     bis.read(header.command);
     bis.read(header.payload_length.bytes);
