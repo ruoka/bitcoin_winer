@@ -32,8 +32,11 @@ namespace bitcoin
         {
             return native == other.native;
         }
+    private:
         native_type native = {0x0};
         byte bytes[sizeof native];
+        friend class message::header;
+        friend class message::payload;
     };
 
     using satoshis = integer<std::uint64_t>;

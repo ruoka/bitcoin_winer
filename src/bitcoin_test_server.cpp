@@ -5,7 +5,7 @@
 #include "net/acceptor.hpp"
 #include "net/syslogstream.hpp"
 
-using namespace bitcoin::p2p;
+using namespace bitcoin;
 using namespace std::literals;
 using namespace net;
 
@@ -39,10 +39,10 @@ try {
         slog << debug << "Waiting for messages" << flush;
         auto header = message::header{};
         connection >> header;
-        auto payload = message::payload(header.payload_length);
+        auto payload = message::payload(header.payload_length());
         connection >> payload;
 
-        if(header.command == header.command) // version
+        if(header.is_version()) // version
         {
             slog << debug << "Received version message" << flush;
             auto version = message::version{};
@@ -54,7 +54,7 @@ try {
             connection << header << payload << flush;
             ++handshake;
         }
-        else if(header.command == header.command) // verack
+        else if(header.is_verack()) // verack
         {
             slog << debug << "Received verack message" << flush;
             auto verack = message::verack{};
@@ -73,10 +73,10 @@ try {
             slog << debug << "Waiting for messages" << flush;
             auto header = message::header{};
             connection >> header;
-            auto payload = message::payload(header.payload_length);
+            auto payload = message::payload(header.payload_length());
             connection >> payload;
 
-            if(header.command == header.command) // ping
+            if(header.is_ping()) // ping
             {
                 slog << debug << "Received ping message" << flush;
                 auto ping = message::ping{};
@@ -87,7 +87,7 @@ try {
                 auto header = message::header{payload};
                 connection << header << payload << flush;
             }
-            else if(header.command == header.command) // pong
+            else if(header.is_pong()) // pong
             {
                 slog << debug << "Received pong message" << flush;
                 auto pong = message::pong{};

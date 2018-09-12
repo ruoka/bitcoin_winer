@@ -4,7 +4,7 @@
 #include "bitcoin/message/payload.hpp"
 #include "net/connector.hpp"
 
-using namespace bitcoin::p2p;
+using namespace bitcoin;
 
 using namespace std::literals;
 
@@ -28,10 +28,10 @@ try {
     {
         auto header = message::header{};
         connection >> header;
-        auto payload = message::payload(header.payload_length);
+        auto payload = message::payload(header.payload_length());
         connection >> payload;
 
-        if(header.command == header.command) // version
+        if(header.is_version()) // version
         {
             auto version = message::version{};
             payload >> version;
@@ -41,7 +41,7 @@ try {
             connection << header << payload << net::flush;
             ++checks;
         }
-        else if(header.command == header.command) // verack
+        else if(header.is_verack()) // verack
         {
             auto verack = message::verack{};
             payload >> verack;
@@ -58,10 +58,10 @@ try {
         {
             auto header = message::header{};
             connection >> header;
-            auto payload = message::payload(header.payload_length);
+            auto payload = message::payload(header.payload_length());
             connection >> payload;
 
-            if(header.command == header.command) // ping
+            if(header.is_ping()) // ping
             {
                 auto ping = message::ping{};
                 payload >> ping;
@@ -70,7 +70,7 @@ try {
                 auto header = message::header{payload};
                 connection << header << payload << net::flush;
             }
-            else if(header.command == header.command) // pong
+            else if(header.is_pong()) // pong
             {
                 auto pong = message::pong{};
                 payload >> pong;

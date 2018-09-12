@@ -10,20 +10,58 @@ constexpr auto testnet  = unsigned_integer{0xdab5bffau};
 constexpr auto testnet3 = unsigned_integer{0x0709110bu};
 constexpr auto namecoin = unsigned_integer{0xfeb4bef9u};
 
-struct header
+class header
 {
+public:
     header() = default;
-
     header(const payload& pl) :
-        command{pl.command()},
-        payload_length{pl.length()},
-        checksum{pl.checksum()}
+        m_command{pl.command()},
+        m_payload_length{pl.length()},
+        m_checksum{pl.checksum()}
     {}
-
-    unsigned_integer magic = {main};
-    std::array<byte,12> command = {};
-    unsigned_integer payload_length = {0x0u};
-    unsigned_integer checksum = {0x5df6e0e2u};
+    void write(obytestream obs)
+    {
+        obs.write(m_magic.bytes);
+        obs.write(m_command);
+        obs.write(m_payload_length.bytes);
+        obs.write(m_checksum.bytes);
+    }
+    void read(ibytestream ibs)
+    {
+        ibs.read(m_magic.bytes);
+        ibs.read(m_command);
+        ibs.read(m_payload_length.bytes);
+        ibs.read(m_checksum.bytes);
+    }
+    bool is_version() const
+    {
+        return false;
+    }
+    bool is_verack() const
+    {
+        return false;
+    }
+    bool is_ping() const
+    {
+        return false;
+    }
+    bool is_pong() const
+    {
+        return false;
+    }
+    unsigned_integer payload_length() const
+    {
+        return m_payload_length;
+    }
+    unsigned_integer checksum() const
+    {
+        return m_checksum;
+    }
+private:
+    unsigned_integer m_magic = {main};
+    std::array<byte,12> m_command = {};
+    unsigned_integer m_payload_length = {0x0u};
+    unsigned_integer m_checksum = {0x5df6e0e2u};
 };
 
 } // namespace bitcoin::message
@@ -33,21 +71,13 @@ namespace std
 
 inline auto& operator << (std::ostream& os, bitcoin::message::header& header)
 {
-    auto bos = bitcoin::message::obytestream{os};
-    bos.write(header.magic.bytes);
-    bos.write(header.command);
-    bos.write(header.payload_length.bytes);
-    bos.write(header.checksum.bytes);
+    header.write(os);
     return os;
 }
 
 inline auto& operator >> (std::istream& is, bitcoin::message::header& header)
 {
-    auto bis = bitcoin::message::ibytestream{is};
-    bis.read(header.magic.bytes);
-    bis.read(header.command);
-    bis.read(header.payload_length.bytes);
-    bis.read(header.checksum.bytes);
+    header.read(is);
     return is;
 }
 

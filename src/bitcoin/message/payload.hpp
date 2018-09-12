@@ -210,7 +210,17 @@ public:
         return *this;
     }
 
-// private:
+    void write(obytestream obs) const
+    {
+        obs.write(m_buffer);
+    }
+
+    void read(ibytestream ibs)
+    {
+        ibs.read(m_buffer);
+    }
+
+private:
 
     void write(const variable_length_integer& variable)
     {
@@ -290,17 +300,15 @@ public:
 
 namespace std {
 
-    inline auto& operator << (std::ostream& os, const bitcoin::message::payload& pl)
+    inline auto& operator << (std::ostream& os, const bitcoin::message::payload& payload)
     {
-        auto obs = bitcoin::message::obytestream{os};
-        obs.write(pl.m_buffer);
+        payload.write(os);
         return os;
     }
 
-    inline auto& operator >> (std::istream& is, bitcoin::message::payload& pl)
+    inline auto& operator >> (std::istream& is, bitcoin::message::payload& payload)
     {
-        auto ibs = bitcoin::message::ibytestream{is};
-        ibs.read(pl.m_buffer);
+        payload.read(is);
         return is;
     }
 
