@@ -43,10 +43,10 @@ TEST(BitcoinPrimitives,Hash)
     auto hash2 = bitcoin::hash{};
 
     sha256.hash("test test test test test test test test"s);
-    sha256.encode(hash1.bytes);
+    sha256.encode(hash1.as_bytes());
     hash2 = hash1;
 
-    EXPECT_EQ(sha256.base64(), cryptic::base64::encode(gsl::make_span(hash1.bytes)));
-    EXPECT_EQ(cryptic::base64::encode(gsl::make_span(hash1.bytes)), cryptic::base64::encode(gsl::make_span(hash2.bytes)));
-    EXPECT_EQ(sha256.base64(), cryptic::base64::encode(gsl::make_span(hash2.bytes)));
+    EXPECT_EQ(sha256.base64(), cryptic::base64::encode(hash1.as_bytes()));
+    EXPECT_EQ(cryptic::base64::encode(hash1.as_bytes()), cryptic::base64::encode(hash2.as_bytes()));
+    EXPECT_EQ(sha256.base64(), cryptic::base64::encode(hash2.as_bytes()));
 }

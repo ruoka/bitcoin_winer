@@ -31,7 +31,7 @@ try {
         auto payload = message::payload(header.payload_length());
         connection >> payload;
 
-        if(header.is_version()) // version
+        if(header.command().is_version()) // version
         {
             auto version = message::version{};
             payload >> version;
@@ -41,7 +41,7 @@ try {
             connection << header << payload << net::flush;
             ++checks;
         }
-        else if(header.is_verack()) // verack
+        else if(header.command().is_verack()) // verack
         {
             auto verack = message::verack{};
             payload >> verack;
@@ -61,7 +61,7 @@ try {
             auto payload = message::payload(header.payload_length());
             connection >> payload;
 
-            if(header.is_ping()) // ping
+            if(header.command().is_ping()) // ping
             {
                 auto ping = message::ping{};
                 payload >> ping;
@@ -70,7 +70,7 @@ try {
                 auto header = message::header{payload};
                 connection << header << payload << net::flush;
             }
-            else if(header.is_pong()) // pong
+            else if(header.command().is_pong()) // pong
             {
                 auto pong = message::pong{};
                 payload >> pong;

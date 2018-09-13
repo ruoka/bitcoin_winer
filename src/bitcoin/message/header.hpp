@@ -19,47 +19,35 @@ public:
         m_payload_length{pl.length()},
         m_checksum{pl.checksum()}
     {}
-    void write(obytestream obs)
+    auto command() const
     {
-        obs.write(m_magic.bytes);
-        obs.write(m_command);
-        obs.write(m_payload_length.bytes);
-        obs.write(m_checksum.bytes);
+        return m_command;
     }
-    void read(ibytestream ibs)
-    {
-        ibs.read(m_magic.bytes);
-        ibs.read(m_command);
-        ibs.read(m_payload_length.bytes);
-        ibs.read(m_checksum.bytes);
-    }
-    bool is_version() const
-    {
-        return false;
-    }
-    bool is_verack() const
-    {
-        return false;
-    }
-    bool is_ping() const
-    {
-        return false;
-    }
-    bool is_pong() const
-    {
-        return false;
-    }
-    unsigned_integer payload_length() const
+    auto payload_length() const
     {
         return m_payload_length;
     }
-    unsigned_integer checksum() const
+    auto checksum() const
     {
         return m_checksum;
     }
+    void dump(obytestream obs)
+    {
+        obs.write(m_magic.as_bytes());
+        obs.write(m_command.as_bytes());
+        obs.write(m_payload_length.as_bytes());
+        obs.write(m_checksum.as_bytes());
+    }
+    void pump(ibytestream ibs)
+    {
+        ibs.read(m_magic.as_bytes());
+        ibs.read(m_command.as_bytes());
+        ibs.read(m_payload_length.as_bytes());
+        ibs.read(m_checksum.as_bytes());
+    }
 private:
     unsigned_integer m_magic = {main};
-    std::array<byte,12> m_command = {};
+    message::command m_command = {};
     unsigned_integer m_payload_length = {0x0u};
     unsigned_integer m_checksum = {0x5df6e0e2u};
 };
@@ -71,13 +59,13 @@ namespace std
 
 inline auto& operator << (std::ostream& os, bitcoin::message::header& header)
 {
-    header.write(os);
+    header.dump(os);
     return os;
 }
 
 inline auto& operator >> (std::istream& is, bitcoin::message::header& header)
 {
-    header.read(is);
+    header.pump(is);
     return is;
 }
 

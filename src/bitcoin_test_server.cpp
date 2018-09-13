@@ -42,7 +42,7 @@ try {
         auto payload = message::payload(header.payload_length());
         connection >> payload;
 
-        if(header.is_version()) // version
+        if(header.command().is_version()) // version
         {
             slog << debug << "Received version message" << flush;
             auto version = message::version{};
@@ -54,7 +54,7 @@ try {
             connection << header << payload << flush;
             ++handshake;
         }
-        else if(header.is_verack()) // verack
+        else if(header.command().is_verack()) // verack
         {
             slog << debug << "Received verack message" << flush;
             auto verack = message::verack{};
@@ -76,7 +76,7 @@ try {
             auto payload = message::payload(header.payload_length());
             connection >> payload;
 
-            if(header.is_ping()) // ping
+            if(header.command().is_ping()) // ping
             {
                 slog << debug << "Received ping message" << flush;
                 auto ping = message::ping{};
@@ -87,7 +87,7 @@ try {
                 auto header = message::header{payload};
                 connection << header << payload << flush;
             }
-            else if(header.is_pong()) // pong
+            else if(header.command().is_pong()) // pong
             {
                 slog << debug << "Received pong message" << flush;
                 auto pong = message::pong{};

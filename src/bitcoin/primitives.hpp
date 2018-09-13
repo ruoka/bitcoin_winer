@@ -2,18 +2,13 @@
 #include <cstdint>
 #include <type_traits>
 #include <vector>
+#include "gsl/span.hpp"
 
 // The hashes are in internal byte order; the other values are all in little-endian order.
 // https://bitcoin.org/en/developer-reference#block-headers
 
 namespace bitcoin
 {
-    namespace message
-    {
-        class header;
-        class payload;
-    }
-
     using byte = std::byte;
 
     template<typename Native>
@@ -32,11 +27,17 @@ namespace bitcoin
         {
             return native == other.native;
         }
+        auto as_bytes()
+        {
+            return gsl::make_span(bytes);
+        }
+        auto as_bytes() const
+        {
+            return gsl::make_span(bytes);
+        }
     private:
         native_type native = {0x0};
         byte bytes[sizeof native];
-        friend class message::header;
-        friend class message::payload;
     };
 
     using satoshis = integer<std::uint64_t>;
@@ -93,6 +94,22 @@ namespace bitcoin
                 default: return uint8 == size;
             }
         }
+        auto as_byte()
+        {
+            return gsl::make_span(&byte,1);
+        }
+        auto as_byte() const
+        {
+            return gsl::make_span(&byte,1);
+        }
+        auto as_bytes()
+        {
+            return gsl::make_span(bytes);
+        }
+        auto as_bytes() const
+        {
+            return gsl::make_span(bytes);
+        }
     private:
         union
         {
@@ -106,7 +123,6 @@ namespace bitcoin
             std::uint64_t uint64;
             std::byte bytes[8];
         };
-        friend class message::payload;
     };
 
     template<typename T>
@@ -116,8 +132,18 @@ namespace bitcoin
 
     using raw_transaction = vector<byte>;
 
-    struct hash
+    class hash
     {
+    public:
+        auto as_bytes()
+        {
+            return gsl::make_span(bytes);
+        }
+        auto as_bytes() const
+        {
+            return gsl::make_span(bytes);
+        }
+    private:
         byte bytes[32] = {};
     };
 
