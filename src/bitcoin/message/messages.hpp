@@ -127,9 +127,9 @@ struct ping
 {
     ping()
     {
-        auto engine = std::default_random_engine{};
+        auto device = std::random_device{};
         auto distribution = std::uniform_int_distribution<unsigned_long::native_type>{};
-        nonce = distribution(engine);
+        nonce = distribution(device);
     }
     unsigned_long nonce = {0x0ul};
 };

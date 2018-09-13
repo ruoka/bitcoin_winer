@@ -12,18 +12,18 @@ using namespace net;
 int main()
 try {
 
-    net::slog.tag("WinerServer");
+    net::slog.tag("WinerClient");
     slog.facility(syslog::facility::local0);
     slog.level(syslog::severity::debug);
     slog.redirect(std::clog);
 
-    slog << debug << "Connecting" << flush;
+    slog << debug << "Connecting peer" << flush;
     auto connection = net::connect("localhost", "18333");
-    slog << debug << "Connected" << flush;
+    slog << notice << "Connected peer" << flush;
 
     // Call a node connect
     {
-        slog << debug << "Sending version message" << flush;
+        slog << info << "Sending version message" << flush;
         auto version = message::version{};
         auto payload = message::payload{version};
         auto header = message::header{payload};
@@ -46,10 +46,10 @@ try {
 
         if(header.command().is_version()) // version
         {
-            slog << debug << "Received version message" << flush;
+            slog << info << "Received version message" << flush;
             auto version = message::version{};
             payload >> version;
-            slog << debug << "Sending varack message" << flush;
+            slog << info << "Replying varack message" << flush;
             auto verack = message::verack{};
             auto payload = message::payload{verack};
             auto header = message::header{payload};
@@ -58,7 +58,7 @@ try {
         }
         else if(header.command().is_verack()) // verack
         {
-            slog << debug << "Received verack message" << flush;
+            slog << info << "Received verack message" << flush;
             auto verack = message::verack{};
             payload >> verack;
             ++handshake;
@@ -74,7 +74,7 @@ try {
     // Ping pong
     while(connection && pings < 2)
     {
-        if(connection.wait_for(30s))
+        if(connection.wait_for(25s))
         {
             slog << debug << "Waiting for messages" << flush;
             auto header = message::header{};
@@ -87,20 +87,20 @@ try {
 
             if(header.command().is_ping()) // ping
             {
-                slog << debug << "Received ping message" << flush;
                 auto ping = message::ping{};
                 payload >> ping;
-                slog << debug << "Sending pong message" << flush;
+                slog << info << "Received ping message: " << ping.nonce << flush;
                 auto pong = message::pong{ping};
                 auto payload = message::payload{pong};
                 auto header = message::header{payload};
                 connection << header << payload << flush;
+                slog << info << "Replyed pong message: " << pong.nonce << flush;
             }
             else if(header.command().is_pong()) // pong
             {
-                slog << debug << "Received pong message" << flush;
                 auto pong = message::pong{};
                 payload >> pong;
+                slog << info << "Received pong message: " << pong.nonce << flush;
                 --pings;
             }
             else
@@ -110,11 +110,11 @@ try {
         }
         else
         {
-            slog << debug << "Sending ping message" << flush;
             auto ping = message::ping{};
             auto payload = message::payload{ping};
             auto header = message::header{payload};
             connection << header << payload << flush;
+            slog << info << "Sent ping message: " << ping.nonce << flush;
             ++pings;
         }
     }
