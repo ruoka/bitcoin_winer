@@ -11,13 +11,13 @@ namespace bitcoin
 {
     using byte = std::byte;
 
-    template<typename Native>
+    template<typename Native, std::size_t N = sizeof(Native)>
     union integer
     {
         static_assert(std::is_integral_v<Native>);
         using native_type = Native;
         integer() = default;
-        constexpr integer(const native_type& i) : native(i)
+        constexpr integer(const native_type& number) : native(number)
         {}
         operator std::size_t () const
         {
@@ -26,6 +26,10 @@ namespace bitcoin
         bool operator == (const integer& other) const
         {
             return native == other.native;
+        }
+        static constexpr std::size_t size() noexcept
+        {
+            return N;
         }
         auto as_bytes()
         {
@@ -37,7 +41,7 @@ namespace bitcoin
         }
     private:
         native_type native = {0x0};
-        byte bytes[sizeof native];
+        byte bytes[size()];
     };
 
     using satoshis = integer<std::uint64_t>;
@@ -84,14 +88,24 @@ namespace bitcoin
                 default: return uint8;
             }
         }
-        bool operator == (std::size_t size) const
+        bool operator == (std::size_t number) const
         {
             switch(uint8)
             {
-                case 0xFDu: return uint16 == size;
-                case 0xFEu: return uint32 == size;
-                case 0xFFu: return uint64 == size;
-                default: return uint8 == size;
+                case 0xFDu: return uint16 == number;
+                case 0xFEu: return uint32 == number;
+                case 0xFFu: return uint64 == number;
+                default:    return uint8  == number;
+            }
+        }
+        std::size_t size() const
+        {
+            switch(uint8)
+            {
+                case 0xFDu: return sizeof uint16;
+                case 0xFEu: return sizeof uint32;
+                case 0xFFu: return sizeof uint64;
+                default:    return sizeof 0;
             }
         }
         auto as_byte()
@@ -104,11 +118,11 @@ namespace bitcoin
         }
         auto as_bytes()
         {
-            return gsl::make_span(bytes);
+            return gsl::make_span(bytes,size());
         }
         auto as_bytes() const
         {
-            return gsl::make_span(bytes);
+            return gsl::make_span(bytes,size());
         }
     private:
         union

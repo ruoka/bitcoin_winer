@@ -12,7 +12,7 @@ public:
     obytestream(std::ostream& os) : m_os{os}
     {}
 
-    void write(const gsl::span<std::byte> bytes)
+    void write(const gsl::span<const std::byte> bytes)
     {
         m_os.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
     }

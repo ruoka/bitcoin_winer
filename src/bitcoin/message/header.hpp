@@ -31,7 +31,7 @@ public:
     {
         return m_checksum;
     }
-    void dump(obytestream obs)
+    void dump(obytestream obs) const
     {
         obs.write(m_magic.as_bytes());
         obs.write(m_command.as_bytes());
@@ -57,7 +57,7 @@ private:
 namespace std
 {
 
-inline auto& operator << (std::ostream& os, bitcoin::message::header& header)
+inline auto& operator << (std::ostream& os, const bitcoin::message::header& header)
 {
     header.dump(os);
     return os;
