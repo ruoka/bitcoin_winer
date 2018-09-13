@@ -22,6 +22,7 @@ try {
     slog << debug << "Waiting for connections" << flush;
     auto connection = acceptor.accept();
     slog << debug << "Accepted connection" << flush;
+
     // Call a node connect
     {
         slog << debug << "Sending version message" << flush;
@@ -39,6 +40,9 @@ try {
         slog << debug << "Waiting for messages" << flush;
         auto header = message::header{};
         connection >> header;
+
+        slog << debug << "Payload length: " << header.payload_length() << flush;
+
         auto payload = message::payload(header.payload_length());
         connection >> payload;
 
@@ -61,6 +65,10 @@ try {
             payload >> verack;
             ++handshake;
         }
+        else
+        {
+            slog << warning << "Received unknown message" << flush;
+        }
     }
 
     auto pings = 0;
@@ -73,6 +81,9 @@ try {
             slog << debug << "Waiting for messages" << flush;
             auto header = message::header{};
             connection >> header;
+
+            slog << debug << "Payload length: " << header.payload_length() << flush;
+
             auto payload = message::payload(header.payload_length());
             connection >> payload;
 
@@ -93,6 +104,10 @@ try {
                 auto pong = message::pong{};
                 payload >> pong;
                 --pings;
+            }
+            else
+            {
+                slog << warning << "Received unknown message" << flush;
             }
         }
         else

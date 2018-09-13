@@ -22,19 +22,19 @@ public:
     {}
     bool is_version() const
     {
-        return gsl::make_span(bytes) == gsl::make_span("version"sv);
+        return gsl::make_span(bytes).first(7) == gsl::make_span("version"sv);
     }
     bool is_verack() const
     {
-        return gsl::make_span(bytes) == gsl::make_span("verack"sv);
+        return gsl::make_span(bytes).first(6) == gsl::make_span("verack"sv);
     }
     bool is_ping() const
     {
-        return gsl::make_span(bytes) == gsl::make_span("ping"sv);
+        return gsl::make_span(bytes).first(4) == gsl::make_span("ping"sv);
     }
     bool is_pong() const
     {
-        return gsl::make_span(bytes) == gsl::make_span("pong"sv);
+        return gsl::make_span(bytes).first(4) == gsl::make_span("pong"sv);
     }
     auto as_bytes()
     {
