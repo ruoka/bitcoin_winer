@@ -80,15 +80,23 @@ end:
 
 void pool_mine(const bitcoin::block& block)
 {
-    auto thread1 = std::thread{[&](){mine(block,   0u,  64u);}};
-    auto thread2 = std::thread{[&](){mine(block,  64u, 128u);}};
-    auto thread3 = std::thread{[&](){mine(block, 128u, 192u);}};
-    auto thread4 = std::thread{[&](){mine(block, 192u, 246u);}};
+    auto thread1 = std::thread{[&](){mine(block,   0u,  32u);}};
+    auto thread2 = std::thread{[&](){mine(block,  32u,  64u);}};
+    auto thread3 = std::thread{[&](){mine(block,  64u,  96u);}};
+    auto thread4 = std::thread{[&](){mine(block,  96u, 128u);}};
+    auto thread5 = std::thread{[&](){mine(block, 128u, 160u);}};
+    auto thread6 = std::thread{[&](){mine(block, 160u, 192u);}};
+    auto thread7 = std::thread{[&](){mine(block, 192u, 224u);}};
+    auto thread8 = std::thread{[&](){mine(block, 224u, 266u);}};
     std::this_thread::yield();
     thread1.join();
     thread2.join();
     thread3.join();
     thread4.join();
+    thread5.join();
+    thread6.join();
+    thread7.join();
+    thread8.join();
 }
 
 } // namespace bitcoin

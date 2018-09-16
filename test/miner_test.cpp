@@ -17,6 +17,9 @@ TEST(BitcoinMiner,Solo)
 
 TEST(BitcoinMiner,Pool)
 {
+    unsigned int n = std::thread::hardware_concurrency();
+    std::cout << n << " concurrent threads are supported:\n";
+
     const auto timestamp = std::chrono::system_clock::now();
     auto block = bitcoin::block{};
     auto hash = cryptic::sha256{};
