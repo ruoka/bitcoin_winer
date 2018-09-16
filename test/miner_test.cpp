@@ -3,10 +3,12 @@
 
 TEST(BitcoinMiner,AdHoc)
 {
-    bitcoin::mine();
+    const auto timestamp = std::chrono::system_clock::now();
+    bitcoin::mine(timestamp);
 }
 
 TEST(BitcoinMiner,Pool)
 {
-    bitcoin::pool_mine();
+    const auto timestamp = std::chrono::system_clock::now();
+    bitcoin::pool_mine(timestamp);
 }
