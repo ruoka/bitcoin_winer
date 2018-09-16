@@ -38,11 +38,11 @@ public:
     }
     auto as_bytes()
     {
-        return gsl::as_writeable_bytes<char>(bytes);
+        return gsl::as_writeable_bytes<char>(gsl::make_span(bytes));
     }
     auto as_bytes() const
     {
-        return gsl::as_bytes<const char>(bytes);
+        return gsl::as_bytes<const char>(gsl::make_span(bytes));
     }
 private:
     std::array<char,12> bytes = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};

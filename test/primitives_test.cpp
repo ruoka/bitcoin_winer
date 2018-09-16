@@ -64,7 +64,8 @@ TEST(BitcoinPrimitivesBlock,Target)
     std::cout << (0x1d00fffful >> 24) << std::endl;;
 
     auto block = bitcoin::block{};
-    block.header.bits = 0x1d00fffful;
+    // block.header.bits = 0x1d00fffful;
+    block.header.bits = 0x172819a1;
 
     std::clog << std::bitset<8>(0x1dul) << std::endl;
 
