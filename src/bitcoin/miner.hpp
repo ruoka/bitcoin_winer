@@ -10,7 +10,7 @@
 namespace bitcoin
 {
 
-void mine(std::chrono::system_clock::time_point timestamp, std::uint_fast16_t begin = 0u, std::uint_fast16_t end = 256u)
+void mine(const bitcoin::block& block, std::uint_fast16_t begin = 0u, std::uint_fast16_t end = 256u)
 {
     static auto s_mutex = std::mutex{};
     {
@@ -18,16 +18,8 @@ void mine(std::chrono::system_clock::time_point timestamp, std::uint_fast16_t be
         std::clog << "Begin of " << begin << std::endl;
     }
 
-    auto block = bitcoin::block{};
-    auto payload = bitcoin::message::payload{};
     auto hash = cryptic::sha256{};
-
-    hash.encode(block.header.previous_block.as_bytes());
-    hash.encode(block.header.merkle_root.as_bytes());
-    block.header.timestamp = std::chrono::duration_cast<std::chrono::seconds>(timestamp.time_since_epoch()).count();
-    block.header.bits = 0x1d00fffful;
-    // block.header.bits = 0x172819a1;
-    // block.header.bits = 0x1e00fffful;
+    auto payload = bitcoin::message::payload{};
 
     payload << block;
 
@@ -86,12 +78,12 @@ end:
     }
 }
 
-void pool_mine(std::chrono::system_clock::time_point timestamp)
+void pool_mine(const bitcoin::block& block)
 {
-    auto thread1 = std::thread{[&](){mine(timestamp,   0u,  64u);}};
-    auto thread2 = std::thread{[&](){mine(timestamp,  64u, 128u);}};
-    auto thread3 = std::thread{[&](){mine(timestamp, 128u, 192u);}};
-    auto thread4 = std::thread{[&](){mine(timestamp, 192u, 246u);}};
+    auto thread1 = std::thread{[&](){mine(block,   0u,  64u);}};
+    auto thread2 = std::thread{[&](){mine(block,  64u, 128u);}};
+    auto thread3 = std::thread{[&](){mine(block, 128u, 192u);}};
+    auto thread4 = std::thread{[&](){mine(block, 192u, 246u);}};
     std::this_thread::yield();
     thread1.join();
     thread2.join();
