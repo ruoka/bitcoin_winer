@@ -4,7 +4,7 @@ CXXFLAGS = -nostdinc++ -I/usr/local/include/c++/v1 -I$(SRCDIR)
 
 CXXFLAGS += -Icryptic/src/ -Inet4cpp/src/
 
-CXXFLAGS += -std=c++1z -MMD
+CXXFLAGS += -std=c++1z -MMD -O3
 
 LDFLAGS = -nostdlib -L/usr/lib -L/usr/local/lib -lc++ -lSystem
 

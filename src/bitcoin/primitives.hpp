@@ -17,15 +17,15 @@ namespace bitcoin
         static_assert(std::is_integral_v<Native>);
         using native_type = Native;
         integer() = default;
-        constexpr integer(const native_type& number) : native(number)
+        constexpr integer(const native_type& number) : m_native(number)
         {}
         operator native_type () const
         {
-            return native;
+            return m_native;
         }
         bool operator == (const integer& other) const
         {
-            return native == other.native;
+            return m_native == other.m_native;
         }
         static constexpr std::size_t size() noexcept
         {
@@ -33,15 +33,15 @@ namespace bitcoin
         }
         auto as_bytes()
         {
-            return gsl::make_span(bytes);
+            return gsl::make_span(m_bytes);
         }
         auto as_bytes() const
         {
-            return gsl::make_span(bytes);
+            return gsl::make_span(m_bytes);
         }
     private:
-        native_type native = {0x0};
-        byte bytes[size()];
+        native_type m_native = {0x0};
+        byte m_bytes[size()];
     };
 
     using satoshis = integer<std::uint64_t>;
@@ -59,83 +59,83 @@ namespace bitcoin
         {
             if(i < 0xFDu)
             {
-                uint8 = static_cast<std::uint8_t>(i);
-                uint64 = 0x0;
+                m_uint8 = static_cast<std::uint8_t>(i);
+                m_uint64 = 0x0;
             }
             else if(i <= 0xFFFFu)
             {
-                uint8 = 0xFDu;
-                uint16 = static_cast<std::uint16_t>(i);
+                m_uint8 = 0xFDu;
+                m_uint16 = static_cast<std::uint16_t>(i);
             }
             else if(i <= 0xFFFFFFFFu)
             {
-                uint8 = 0xFEu;
-                uint32 = static_cast<std::uint32_t>(i);
+                m_uint8 = 0xFEu;
+                m_uint32 = static_cast<std::uint32_t>(i);
             }
             else
             {
-                uint8 = 0xFFu;
-                uint64 = i;
+                m_uint8 = 0xFFu;
+                m_uint64 = i;
             }
         }
         operator std::size_t () const
         {
-            switch(uint8)
+            switch(m_uint8)
             {
-                case 0xFDu: return uint16;
-                case 0xFEu: return uint32;
-                case 0xFFu: return uint64;
-                default: return uint8;
+                case 0xFDu: return m_uint16;
+                case 0xFEu: return m_uint32;
+                case 0xFFu: return m_uint64;
+                default: return m_uint8;
             }
         }
         bool operator == (std::size_t number) const
         {
-            switch(uint8)
+            switch(m_uint8)
             {
-                case 0xFDu: return uint16 == number;
-                case 0xFEu: return uint32 == number;
-                case 0xFFu: return uint64 == number;
-                default:    return uint8  == number;
+                case 0xFDu: return m_uint16 == number;
+                case 0xFEu: return m_uint32 == number;
+                case 0xFFu: return m_uint64 == number;
+                default:    return m_uint8  == number;
             }
         }
         std::size_t size() const
         {
-            switch(uint8)
+            switch(m_uint8)
             {
-                case 0xFDu: return sizeof uint16;
-                case 0xFEu: return sizeof uint32;
-                case 0xFFu: return sizeof uint64;
+                case 0xFDu: return sizeof m_uint16;
+                case 0xFEu: return sizeof m_uint32;
+                case 0xFFu: return sizeof m_uint64;
                 default:    return sizeof 0;
             }
         }
         auto as_byte()
         {
-            return gsl::make_span(&byte,1);
+            return gsl::make_span(&m_byte,1);
         }
         auto as_byte() const
         {
-            return gsl::make_span(&byte,1);
+            return gsl::make_span(&m_byte,1);
         }
         auto as_bytes()
         {
-            return gsl::make_span(bytes,size());
+            return gsl::make_span(m_bytes,size());
         }
         auto as_bytes() const
         {
-            return gsl::make_span(bytes,size());
+            return gsl::make_span(m_bytes,size());
         }
     private:
         union
         {
-            std::uint8_t uint8;
-            std::byte byte;
+            std::uint8_t m_uint8;
+            std::byte m_byte;
         };
         union
         {
-            std::uint16_t uint16;
-            std::uint32_t uint32;
-            std::uint64_t uint64;
-            std::byte bytes[8];
+            std::uint16_t m_uint16;
+            std::uint32_t m_uint32;
+            std::uint64_t m_uint64;
+            std::byte m_bytes[8];
         };
     };
 
@@ -151,18 +151,18 @@ namespace bitcoin
     public:
         hash()
         {
-            std::fill(bytes,bytes+32,byte{0});
+            std::fill(m_bytes, m_bytes + 32, byte{0});
         }
         auto as_bytes()
         {
-            return gsl::make_span(bytes);
+            return gsl::make_span(m_bytes);
         }
         auto as_bytes() const
         {
-            return gsl::make_span(bytes);
+            return gsl::make_span(m_bytes);
         }
     private:
-        byte bytes[32] = {};
+        byte m_bytes[32] = {};
     };
 
     struct transaction

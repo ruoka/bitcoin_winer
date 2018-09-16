@@ -217,6 +217,16 @@ public:
         ibs.read(m_buffer);
     }
 
+    auto as_bytes()
+    {
+        return gsl::make_span(m_buffer);
+    }
+
+    auto as_bytes() const
+    {
+        return gsl::make_span(m_buffer);
+    }
+
 private:
 
     void write(const gsl::span<const byte> bytes)
