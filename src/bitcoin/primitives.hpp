@@ -19,7 +19,7 @@ namespace bitcoin
         integer() = default;
         constexpr integer(const native_type& number) : native(number)
         {}
-        operator std::size_t () const
+        operator native_type () const
         {
             return native;
         }
@@ -149,6 +149,10 @@ namespace bitcoin
     class hash
     {
     public:
+        hash()
+        {
+            std::fill(bytes,bytes+32,byte{0});
+        }
         auto as_bytes()
         {
             return gsl::make_span(bytes);
@@ -173,7 +177,7 @@ namespace bitcoin
             outpoint previous_output = {};
             variable_length_integer script_length = {0x0u};
             script signature_script = {};
-            unsigned_integer sequence = {0x0u};
+            unsigned_integer sequence = {0xffffffffu};
         };
         struct output
         {
@@ -202,5 +206,15 @@ namespace bitcoin
         } header;
         variable_length_integer transaction_count = {0x0u};
         vector<transaction> transactions = {};
+
+        hash target() const
+        {
+            auto target = hash{};
+            auto digits = (header.bits >> 24ul);
+            auto coefficient = header.bits.as_bytes().first(3ul);
+            auto value = target.as_bytes().last(digits - 1ul);
+            std::copy(coefficient.begin(), coefficient.end(), value.begin());
+            return target;
+        }
     };
 }

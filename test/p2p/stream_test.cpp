@@ -65,7 +65,7 @@ TEST(BitcoinP2PStream,Tx)
 
     EXPECT_EQ(tx2.outputs[0].value, satoshis{0x1ull});
     EXPECT_EQ(tx2.outputs[9].value, satoshis{0x10ull});
-    EXPECT_EQ(tx2.outputs[9].script_length, satoshis{0x2ul});
+    EXPECT_EQ(tx2.outputs[9].script_length, std::size_t{0x2ul});
 
     EXPECT_EQ(tx1.outputs[0].value, tx2.outputs[0].value);
     EXPECT_EQ(tx1.outputs[9].value, tx2.outputs[9].value);
