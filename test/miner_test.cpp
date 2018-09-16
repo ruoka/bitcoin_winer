@@ -5,3 +5,8 @@ TEST(BitcoinMiner,AdHoc)
 {
     bitcoin::mine();
 }
+
+TEST(BitcoinMiner,Pool)
+{
+    bitcoin::pool_mine();
+}

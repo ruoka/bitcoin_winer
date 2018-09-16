@@ -1,4 +1,6 @@
 #pragma once
+#include <thread>
+#include <cstdint>
 #include "bitcoin/primitives.hpp"
 #include "bitcoin/message/payload.hpp"
 #include "cryptic/sha2.hpp"
@@ -8,7 +10,7 @@
 namespace bitcoin
 {
 
-void mine()
+void mine(std::uint_fast16_t begin = 0u, std::uint_fast16_t end = 256u)
 {
     auto block = bitcoin::block{};
     auto payload = bitcoin::message::payload{};
@@ -35,19 +37,19 @@ void mine()
 
     auto target = block.target();
 
-    for(auto h = 0u; h < 256u; ++h)
+    for(auto h = std::uint_fast16_t{0u}; h < 256u; ++h)
     {
         nonce[3] = static_cast<bitcoin::byte>(h);
 
-        for(auto i = 0u; i < 256u; ++i)
+        for(auto i = std::uint_fast16_t{0u}; i < 256u; ++i)
         {
             nonce[2] = static_cast<bitcoin::byte>(i);
 
-            for(auto j = 0u; j < 256u; ++j)
+            for(auto j = begin; j < end; ++j)
             {
                 nonce[1] = static_cast<bitcoin::byte>(j);
 
-                for(auto k = 0u; k < 256u; ++k)
+                for(auto k = std::uint_fast16_t{0u}; k < 256u; ++k)
                 {
                     nonce[0] = static_cast<bitcoin::byte>(k);
 
@@ -65,6 +67,18 @@ void mine()
             }
         }
     }
+}
+
+void pool_mine()
+{
+    auto thread1 = std::thread{[](){mine(  0u,  64u);}};
+    auto thread2 = std::thread{[](){mine( 64u, 128u);}};
+    auto thread3 = std::thread{[](){mine(128u, 192u);}};
+    auto thread4 = std::thread{[](){mine(192u, 246u);}};
+    thread1.join();
+    thread2.join();
+    thread3.join();
+    thread4.join();
 }
 
 } // namespace bitcoin
