@@ -12,6 +12,7 @@ namespace bitcoin
 
 void mine(const bitcoin::block& block, std::uint_fast16_t begin = 0u, std::uint_fast16_t end = 256u)
 {
+    static auto s_stop = std::atomic_bool{false};
     static auto s_mutex = std::mutex{};
     {
         const auto lock = std::scoped_lock{s_mutex};
@@ -33,17 +34,19 @@ void mine(const bitcoin::block& block, std::uint_fast16_t begin = 0u, std::uint_
 
     hash.update(head);
 
-    auto target = block.target();
+    const auto target = block.target();
 
     for(auto h = std::uint_fast16_t{0u}; h < 256u; ++h)
     {
         nonce[3] = static_cast<bitcoin::byte>(h);
 
-        for(auto i = std::uint_fast16_t{0u}; i < 256u; ++i)
+        for(auto i = begin; i < end; ++i)
+        // for(auto i = std::uint_fast16_t{0u}; i < 256u; ++i)
         {
             nonce[2] = static_cast<bitcoin::byte>(i);
 
-            for(auto j = begin; j < end; ++j)
+            for(auto j = std::uint_fast16_t{0u}; j < 256u; ++j)
+            // for(auto j = begin; j < end; ++j)
             {
                 nonce[1] = static_cast<bitcoin::byte>(j);
 
@@ -55,12 +58,15 @@ void mine(const bitcoin::block& block, std::uint_fast16_t begin = 0u, std::uint_
 
                     test.finalize(tail);
 
+                    if(s_stop) goto end;
+
                     if(test < target.as_bytes())
                     {
                         const auto lock = std::scoped_lock{s_mutex};
                         std::clog << "Nonce found " << begin << std::endl;
                         std::clog << *reinterpret_cast<std::uint64_t*>(nonce.data()) << std::endl;
                         std::clog << test.hexadecimal() << std::endl;
+                        s_stop = true;
                         goto end;
                     }
                 }
