@@ -5,7 +5,7 @@
 namespace bitcoin::message
 {
 
-constexpr auto main	    = unsigned_integer{0xd9b4bef9u};
+constexpr auto main	    = unsigned_integer{0xd9b4bef9u}; // FIXME, are these correct?
 constexpr auto testnet  = unsigned_integer{0xdab5bffau};
 constexpr auto testnet3 = unsigned_integer{0x0709110bu};
 constexpr auto namecoin = unsigned_integer{0xfeb4bef9u};
@@ -26,6 +26,10 @@ public:
     auto payload_length() const
     {
         return m_payload_length;
+    }
+    auto payload_length(std::uint32_t length)
+    {
+        m_payload_length = length;
     }
     auto checksum() const
     {

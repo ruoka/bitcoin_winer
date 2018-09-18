@@ -20,21 +20,33 @@ public:
     {}
     command(const pong&) : bytes{'p','o','n','g'}
     {}
+    command(const tx&) : bytes{'t','x'}
+    {}
+    command(const block&) : bytes{'b','l','o','c','k'}
+    {}
     bool is_version() const
     {
-        return gsl::make_span(bytes).first(7) == gsl::make_span("version"sv);
+        return gsl::make_span(bytes).first<8>() == gsl::make_span("version");
     }
     bool is_verack() const
     {
-        return gsl::make_span(bytes).first(6) == gsl::make_span("verack"sv);
+        return gsl::make_span(bytes).first<7>() == gsl::make_span("verack");
     }
     bool is_ping() const
     {
-        return gsl::make_span(bytes).first(4) == gsl::make_span("ping"sv);
+        return gsl::make_span(bytes).first<5>() == gsl::make_span("ping");
     }
     bool is_pong() const
     {
-        return gsl::make_span(bytes).first(4) == gsl::make_span("pong"sv);
+        return gsl::make_span(bytes).first<5>() == gsl::make_span("pong");
+    }
+    bool is_tx() const
+    {
+        return gsl::make_span(bytes).first<3>() == gsl::make_span("tx");
+    }
+    bool is_block() const
+    {
+        return gsl::make_span(bytes).first<6>() == gsl::make_span("block");
     }
     auto as_bytes()
     {

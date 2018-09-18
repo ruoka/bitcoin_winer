@@ -1,6 +1,6 @@
 #pragma once
 #include <random>
-#include "bitcoin/primitives.hpp"
+#include "bitcoin/block.hpp"
 
 namespace bitcoin::message
 {

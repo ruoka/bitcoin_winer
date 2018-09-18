@@ -45,6 +45,12 @@ public:
         return number;
     }
 
+    auto& operator << (const message::payload& load)
+    {
+        write(load.m_buffer);
+        return *this;
+    }
+
     auto& operator << (const message::version& msg)
     {
         Expects(msg.user_agent.length == msg.user_agent.string.size());
