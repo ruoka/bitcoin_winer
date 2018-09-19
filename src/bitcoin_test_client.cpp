@@ -6,35 +6,11 @@
 #include "net/connector.hpp"
 #include "net/syslogstream.hpp"
 
+// https://en.bitcoin.it/wiki/Transaction_fees
+
 using namespace bitcoin;
 using namespace std::literals;
 using namespace net;
-
-inline auto hash_previous_block(const bitcoin::message::payload& payload)
-{
-    return cryptic::sha256{payload.as_bytes().first<80>()};
-}
-
-inline auto hash_merkle_root(std::vector<cryptic::sha256>& hashes1)
-{
-    if(hashes1.size() % 2 == 1)
-        hashes1.push_back(hashes1.back());
-
-    auto hashes2 = std::vector<cryptic::sha256>{};
-
-    for(auto i = 0u; i < hashes1.size(); i+=2u)
-    {
-        auto buffer = std::array<std::byte,64>{};
-        hashes1[i].encode(gsl::make_span(buffer).first<32>());
-        hashes1[i+1].encode(gsl::make_span(buffer).last<32>());
-        hashes2.push_back(cryptic::sha256{buffer});
-    }
-
-    if(hashes2.size() == 1)
-        return hashes2.front();
-    else
-        return hash_merkle_root(hashes2);
-}
 
 inline auto timestamp()
 {
@@ -109,7 +85,11 @@ try {
 
     auto pings = 0;
 
-    auto transactions = std::map<cryptic::sha256,bitcoin::message::payload>{};
+    auto transactions = std::map<cryptic::sha256,bitcoin::transaction>{};
+
+    auto unconfirmed_transactions = std::map<cryptic::sha256,bitcoin::transaction>{};
+
+    auto confirmed_transactions = std::map<cryptic::sha256,bitcoin::transaction>{};
 
     // Ping pong
     while(connection && pings < 2)
@@ -146,7 +126,10 @@ try {
             else if(header.command().is_tx()) // tx
             {
                 auto hash = cryptic::sha256{payload.as_bytes()};
-                transactions.try_emplace(hash, payload);
+                auto transaction = bitcoin::transaction{};
+                payload >> transaction;
+                transactions.try_emplace(hash, transaction);
+                unconfirmed_transactions.try_emplace(hash, transaction);
                 slog << info << "Received tx message" << flush;
             }
             else if(header.command().is_block()) // block
@@ -154,33 +137,26 @@ try {
                 auto previous_block = bitcoin::block{};
                 payload >> previous_block;
                 slog << info << "Received block message" << flush;
-                for(const auto& tx : previous_block.transactions)
+
+                for(const auto& transaction : previous_block.transactions)
                 {
-                    const auto raw_transaction = bitcoin::message::payload{tx};
+                    const auto raw_transaction = bitcoin::message::payload{transaction};
                     const auto hash = cryptic::sha256{raw_transaction.as_bytes()};
-                    transactions.erase(hash);
+                    transactions.try_emplace(hash, transaction);
+                    confirmed_transactions.try_emplace(hash, transaction);
+                    unconfirmed_transactions.erase(hash);
                 }
-                auto hashes = std::vector<cryptic::sha256>{};
-                const auto coinbase = bitcoin::transaction::coinbase();
-                const auto raw_transaction = bitcoin::message::payload{coinbase};
-                const auto hash = cryptic::sha256{raw_transaction.as_bytes()};
-                hashes.push_back(hash);
-                for(const auto &hash : transactions)
-                    hashes.push_back(hash.first);
-                auto block = bitcoin::block{};
-                block.header.version = previous_block.header.version;
-                block.header.previous_block = hash_previous_block(payload);
-                block.header.merkle_root = hash_merkle_root(hashes);
-                block.header.timestamp = timestamp();
-                block.header.bits = previous_block.header.bits;
-                block.header.nonce = 0ul;
-                block.transaction_count = 1u + transactions.size();
-                if(mine(block))
+
+                auto proposed_block = bitcoin::block{};
+                proposed_block.hash_previous_block(payload.as_bytes());
+                proposed_block.reward_and_fees(125ull);
+                proposed_block.add_transactions_and_hash_merkle_root(unconfirmed_transactions);
+
+                const auto success = mine(proposed_block);
+
+                if(success)
                 {
-                    auto payload = message::payload{block};
-                    payload << coinbase;
-                    for(const auto &tx : transactions)
-                        payload << tx.second;
+                    const auto payload = message::payload{proposed_block};
                     const auto header = message::header{payload};
                     connection << header << payload << flush;
                     slog << info << "Sent block message" << flush;

@@ -6,6 +6,10 @@
 
 // 0000000000000000001bf6a7d2d86ba07971f343cee7e9cea305bdc1a7dfe4d6
 
+// https://en.bitcoin.it/wiki/Transaction_fees
+
+// http://bitcoinfees.com
+
 namespace bitcoin
 {
 

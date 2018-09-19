@@ -4,6 +4,22 @@
 namespace bitcoin
 {
 
+inline auto hash_merkle_root(std::vector<cryptic::sha256>& txids)
+{
+    auto hashes = std::vector<cryptic::sha256>{};
+    for(auto i = 0u; i < txids.size(); i+=2u)
+    {
+        auto pair = std::array<std::byte,64>{};
+        txids[i].encode(gsl::make_span(pair).first<32>());
+        txids[i+1].encode(gsl::make_span(pair).last<32>());
+        hashes.push_back(cryptic::sha256{pair});
+    }
+    if(hashes.size() == 1)
+        return hashes.front();
+    else
+        return hash_merkle_root(hashes);
+}
+
 struct block
 {
     struct
@@ -17,6 +33,31 @@ struct block
     } header;
     variable_length_integer transaction_count = {0x0u};
     vector<transaction> transactions = {};
+
+    void hash_previous_block(const gsl::span<byte> previous_block)
+    {
+        header.previous_block = cryptic::sha256{previous_block.first<80>()};
+    }
+
+    void reward_and_fees(const bitcoin::satoshis& value)
+    {
+        transactions.push_back(bitcoin::transaction::coinbase());
+        transactions.front().outputs.front().value = value;
+    }
+
+    void add_transactions_and_hash_merkle_root(const std::map<cryptic::sha256,bitcoin::transaction> txs)
+    {
+        auto txids = std::vector<cryptic::sha256>{};
+        for(const auto &tx : txs)
+        {
+            txids.push_back(tx.first);
+            transactions.push_back(tx.second);
+        }
+        transaction_count = transactions.size();
+        if(txids.size() % 2 == 1)
+            txids.push_back(txids.back());
+        header.merkle_root = hash_merkle_root(txids);
+    }
 
     hash target() const
     {

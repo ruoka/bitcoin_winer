@@ -6,6 +6,8 @@ namespace bitcoin
 
 // https://en.bitcoin.it/wiki/Genesis_block
 
+// https://bitcoin.org/en/developer-guide#block-chain-overview
+
 struct transaction
 {
     struct outpoint
