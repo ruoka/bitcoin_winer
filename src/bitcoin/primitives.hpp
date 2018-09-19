@@ -29,6 +29,10 @@ union integer
     {
         return m_native == other.m_native;
     }
+    bool operator == (native_type other) const
+    {
+        return m_native == other;
+    }
     static constexpr std::size_t size() noexcept
     {
         return N;

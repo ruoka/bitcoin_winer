@@ -28,7 +28,7 @@ void mine(const bitcoin::block block, std::uint_fast16_t begin = 0u, std::uint_f
 
     payload << block;
 
-    Expects(payload.size() == 80);
+    Expects(payload.length() >= 80u);
 
     auto head = payload.as_bytes().first<64>();
 

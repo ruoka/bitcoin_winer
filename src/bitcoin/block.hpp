@@ -6,6 +6,7 @@ namespace bitcoin
 
 inline auto hash_merkle_root(std::vector<cryptic::sha256>& txids)
 {
+    Expects(txids.size() > 0);
     if(txids.size() % 2 == 1)
         txids.push_back(txids.back());
     auto hashes = std::vector<cryptic::sha256>{};
@@ -36,20 +37,26 @@ struct block
     variable_length_integer transaction_count = {0x0u};
     vector<transaction> transactions = {};
 
-    void hash_previous_block(const gsl::span<byte> previous_block)
+    void hash_previous_block(cryptic::span<const byte> previous_block)
     {
         header.previous_block = cryptic::sha256{previous_block.first<80>()};
     }
 
     void reward_and_fees(const bitcoin::satoshis& value)
     {
-        transactions.push_back(bitcoin::transaction::coinbase());
+        if(transactions.empty())
+        {
+            transactions.push_back(bitcoin::transaction::coinbase());
+            transactions.front().outputs.push_back(bitcoin::transaction::output{});
+            transactions.front().output_count = transactions.front().outputs.size();
+        }
         transactions.front().outputs.front().value = value;
     }
 
     void add_transactions_and_hash_merkle_root(const std::map<cryptic::sha256,bitcoin::transaction> txs)
     {
         auto txids = std::vector<cryptic::sha256>{};
+        txids.push_back(cryptic::sha256{}); // FIXME, coinbase hash
         for(const auto &tx : txs)
         {
             txids.push_back(tx.first);
