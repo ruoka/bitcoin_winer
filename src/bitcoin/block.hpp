@@ -6,6 +6,8 @@ namespace bitcoin
 
 inline auto hash_merkle_root(std::vector<cryptic::sha256>& txids)
 {
+    if(txids.size() % 2 == 1)
+        txids.push_back(txids.back());
     auto hashes = std::vector<cryptic::sha256>{};
     for(auto i = 0u; i < txids.size(); i+=2u)
     {
@@ -53,10 +55,8 @@ struct block
             txids.push_back(tx.first);
             transactions.push_back(tx.second);
         }
-        transaction_count = transactions.size();
-        if(txids.size() % 2 == 1)
-            txids.push_back(txids.back());
         header.merkle_root = hash_merkle_root(txids);
+        transaction_count = transactions.size();
     }
 
     hash target() const
